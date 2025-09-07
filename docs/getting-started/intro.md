@@ -1,63 +1,25 @@
----
-lang: en-US
-title: Acode Plugins
----
-# Acode Plugins
+import React, { useState, useEffect } from "react"; import { StyleSheet, Text, View, TouchableOpacity, ScrollView } from "react-native"; import { Pedometer } from "expo-sensors"; import { useKeepAwake } from "expo-keep-awake"; import * as Notifications from "expo-notifications"; import * as Location from "expo-location"; import AsyncStorage from "@react-native-async-storage/async-storage";
 
-> Welcome to the world of Acode plugins! 🚀
+export default function App() { useKeepAwake(); const [date, setDate] = useState(new Date()); const [steps, setSteps] = useState(0); const [distance, setDistance] = useState(0); const [calories, setCalories] = useState(0);
 
+useEffect(() => { const timer = setInterval(() => setDate(new Date()), 1000); return () => clearInterval(timer); }, []);
 
-### What are Acode Plugins?
+useEffect(() => { let subscription; (async () => { const isAvailable = await Pedometer.isAvailableAsync(); if (isAvailable) { subscription = Pedometer.watchStepCount(result => { setSteps(result.steps); const dist = result.steps * 0.8; // rata-rata 0.8 m per langkah setDistance(dist / 1000); setCalories(result.steps * 0.04); }); } })(); return () => subscription && subscription.remove(); }, []);
 
-**Acode** plugins serve as powerful tools to enhance and extend the functionality of your **Acode editor**. Whether you're looking to introduce new features or tweak existing ones, plugins provide a flexible and customizable way to tailor Acode to your specific needs.
+return ( <ScrollView style={styles.container} contentContainerStyle={{ flexGrow: 1 }}> <View style={styles.clockContainer}> <Text style={styles.time}>{date.toLocaleTimeString()}</Text> <Text style={styles.date}>{date.toDateString()}</Text> </View>
 
-### Language Flexibility
+<View style={styles.statsContainer}>
+    <Text style={styles.label}>Langkah: {steps}</Text>
+    <Text style={styles.label}>Jarak: {distance.toFixed(2)} km</Text>
+    <Text style={styles.label}>Kalori: {calories.toFixed(0)} kcal</Text>
+  </View>
 
-Acode plugins are primarily written in JavaScript, offering a familiar and widely-used language for developers. Additionally, for those who prefer TypeScript, **good news 🥳** — Acode supports `TypeScript` for plugin development, providing the benefits of static typing and improved developer experience.
+  <TouchableOpacity style={styles.button}>
+    <Text style={styles.buttonText}>Set Alarm</Text>
+  </TouchableOpacity>
+</ScrollView>
 
-## Installing Acode Plugins
+); }
 
-Discovering and integrating plugins into your Acode editor is a simple and customizable process. There are multiple methods to install plugins, ensuring flexibility and convenience for developers. Before you proceed, it's essential to exercise caution when installing plugins from unknown sources, as they may potentially contain malicious code.
+const styles = StyleSheet.create({ container: { flex: 1, backgroundColor: "#0b1220", // tema dark elegan padding: 20, }, clockContainer: { marginTop: 50, alignItems: "center", }, time: { fontSize: 60, fontWeight: "bold", color: "#1976D2", // biru elegan (brand color) }, date: { fontSize: 20, color: "#FFC107", // amber lembut marginTop: 10, }, statsContainer: { marginTop: 40, backgroundColor: "#121212", borderRadius: 20, padding: 20, }, label: { fontSize: 22, color: "#FAFAFA", marginBottom: 10, }, button: { marginTop: 40, backgroundColor: "#1976D2", padding: 15, borderRadius: 15, alignItems: "center", }, buttonText: { fontSize: 20, color: "white", fontWeight: "bold", }, });
 
-### Installation Methods:
-
-1. **Local Installation:**
-   - Download the plugin file(`.zip`) to your device.
-   - Open Acode and navigate to **Settings**.
-   - Click on **Plugins** and then the `'+'` icon.
-   - Select **LOCAL** and choose the downloaded plugin file.
-
-2. **Remote Installation:**
-   - If you have a plugin file URL (e.g., a plugin file hosted on GitHub):
-     - Open Acode and go to **Settings**.
-     - Navigate to **Plugins** and click on the `'+'` icon.
-     - Choose **REMOTE** and enter the plugin file URL.
-
-:::info
-Currently of no use because of security reason!
-:::
-
-3. **Acode Plugins Manager:**
-   - Access the Acode **Settings** and click on **Plugins**.
-   - Explore the available plugins and select the one you want.
-   - Click on **Install** to seamlessly integrate the chosen plugin into your Acode editor.
-
-4. **Acode SideBar:**
-    - Click on three horizontal slashes from top left corner
-    - Select plugin icon and Explore the plugins 
-
-
-:::info
-
-**Source Persistence:**
-Once installed, plugins remember their source. If you choose to uninstall and reinstall, the plugin will be sourced from the same location, ensuring consistency in your development environment.
-:::
-
-:::danger
-
-**Exercise Caution:**
-It's crucial to exercise caution when installing plugins, especially from unfamiliar sources. Plugins have the potential to contain malicious code, so be discerning and opt for reputable and well-known plugins whenever possible.
-:::
-
-<br />
-Your Acode journey has just begun. Dive in, experiment, and let your coding adventure flourish in this realm of endless possibilities! 🚀✨
